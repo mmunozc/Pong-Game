@@ -119,10 +119,14 @@ int main() {
                             clients[j].partner_index = i;
                             printf("Emparejando a %s y %s\n", clients[i].name, clients[j].name);
 
-                                    // Envía el mensaje "GAME_READY" a ambos clientes emparejados
                             char game_ready_message[] = "GAME_READY";
-                            send(clients[i].client_socket, game_ready_message, strlen(game_ready_message), 0);
+
+                            // Envía el mensaje "GAME_READY" al primer cliente emparejado
                             send(clients[j].client_socket, game_ready_message, strlen(game_ready_message), 0);
+
+                            printf( "NOMBRE i %s\n",clients[i].name);
+                            printf("NOMBRE j %s\n", clients[j].name);
+
                             
                             // Crear hilos para manejar la comunicación entre las parejas emparejadas
                             ThreadData thread_data1;

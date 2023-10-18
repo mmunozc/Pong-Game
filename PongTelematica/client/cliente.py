@@ -2,6 +2,8 @@ import pygame
 import random
 import socket
 import threading
+import time
+
 
 
 WIDTH, HEIGHT = 1200, 600
@@ -44,12 +46,14 @@ def receive_messages(client_socket):
                 punt_b = int(puntB)
             except ValueError:
                 print("Error al procesar la información del puntaje.")
-        elif data.startswith("GAME_READY"):
+        elif data.startswith("GAME_READY") and int(aux) % 2 == 0:
             try:
                 print("ENTRO")
                 game_ready = True
             except ValueError:
                 print("Error")
+
+        
 
 def get_player_name(screen):
     player_name = ""
@@ -106,13 +110,21 @@ def main():
 
     aux = client_socket.recv(1).decode()
     print(aux)
-    
+
     receive_thread = threading.Thread(target=receive_messages, args=(client_socket,))
     receive_thread.start()
 
-    while not game_ready:
-        print("Esperando a que el otro jugador se una...")
-        pygame.display.update()  # Actualiza la pantalla para mostrar el mensaje
+    if int(aux) % 2 == 0:
+        while not game_ready:
+            print("Esperando a que el otro jugador se una...")
+            pygame.display.update()
+    else:
+        punt_a = 0
+        punt_b = 0
+        bola_x = 0
+        bola_y = 0
+        print("JUGADOR 2")
+
 
     # Colores
     WHITE = (255, 255, 255)
@@ -180,7 +192,7 @@ def main():
             client_socket.send(posBall.encode())
         else:
             ball_x = bola_x
-            ball_y = bola_y
+            ball_y = bola_x
 
         # Colisiones de la pelota con las paredes
         if ball_y <= 0 or ball_y >= HEIGHT - 20:
