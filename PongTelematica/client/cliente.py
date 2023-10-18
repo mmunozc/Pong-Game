@@ -104,16 +104,15 @@ def main():
     player_name = get_player_name(screen)
     client_socket.send(player_name.encode())
 
-    while not game_ready:
-        print("Esperando a que el otro jugador se una...")
-        pygame.display.update()  # Actualiza la pantalla para mostrar el mensaje
-
-
     aux = client_socket.recv(1).decode()
     print(aux)
     
     receive_thread = threading.Thread(target=receive_messages, args=(client_socket,))
     receive_thread.start()
+
+    while not game_ready:
+        print("Esperando a que el otro jugador se una...")
+        pygame.display.update()  # Actualiza la pantalla para mostrar el mensaje
 
     # Colores
     WHITE = (255, 255, 255)
