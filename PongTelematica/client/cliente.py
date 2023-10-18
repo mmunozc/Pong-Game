@@ -53,7 +53,6 @@ def receive_messages(client_socket):
             except ValueError:
                 print("Error")
 
-        
 
 def get_player_name(screen):
     player_name = ""
@@ -91,6 +90,8 @@ def main():
     global prueba
     global bola_x
     global bola_y
+    global punt_a
+    global punt_b
     global aux
     global game_ready
     
