@@ -40,12 +40,12 @@ server_socket = socket(AF_INET, SOCK_STREAM, 0);
 ## Cliente pong
 
 Se importan los módulos necesarios: `pygame` para la interfaz gráfica, `random` para generar números aleatorios, `socket` para la comunicación entre los jugadores y `threading` para manejar hilos.
-
-`import pygame`
-`import random`
-`import socket`
-`import threading`
-
+ ```py
+import pygame
+import random
+import socket
+import threading
+```
 Entre las funciones de mayor importancia podemos destacar:
 1. ## recive_messages()
 >Es responsable de recibir y procesar los mensajes enviados por el otro jugador a través de un socket en un hilo separado.
