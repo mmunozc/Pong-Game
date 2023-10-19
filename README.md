@@ -39,22 +39,33 @@ server_socket = socket(AF_INET, SOCK_STREAM, 0);
 3. La pelota se mueve reflejada, ajustando las coordenadas y velocidades para que ambos jugadores vean el movimiento correcto en sus pantallas.
 4. El servidor y el cliente se comunican constantemente para mantener a ambos jugadores sincronizados, transmitiendo información sobre paletas, pelota y puntaje.
 ## UML diagrama
-
+https://github.com/mmunozc/Pong-Game/blob/main/TelePong_page-0001.jpg
 ## Protocolo
+> - "Subio" y "Bajo": se hace el cambio en el eje x segun la posición de la paleta.
+> - Balon: manda la cordenada actual y la velocidad.
+> - Puntaje: manda el puntaje actual del jugador.
+> - Game_ready:da inicio al juego cuando las parejas estan emparejadas.
 
+```mermaid
+graph TD;
+    Paletas-->Subio;Mensaje-->Paletas;Paletas-->Bajo;Mensaje-->Balon;Mensaje-->Puntaje;Mensaje-->Game_Ready;
+
+```
 ## Cliente pong
 
-Se importan los módulos necesarios: `pygame` para la interfaz gráfica, `random` para generar números aleatorios, `socket` para la comunicación entre los jugadores y `threading` para manejar hilos.
+Se importan los módulos necesarios: pygame para la interfaz gráfica, random para generar números aleatorios, socket para la comunicación entre los jugadores y threading para manejar hilos.
  ```py
+from time import sleep
 import pygame
 import random
 import socket
 import threading
+import sys
 ```
 Entre las funciones de mayor importancia podemos destacar:
 1. ## recive_messages()
 >Es responsable de recibir y procesar los mensajes enviados por el otro jugador a través de un socket en un hilo separado.
->La función recibe un argumento `client_socket`, que es el socket del cliente utilizado para la comunicación con el otro jugador.
+>La función recibe un argumento client_socket, que es el socket del cliente utilizado para la comunicación con el otro jugador.
 ````python
 def receive_messages(client_socket):
 ````
@@ -76,7 +87,7 @@ print("Error al analizar la posición recibida.")
 
 
 #### Diferencia entre jugadores
->La función utiliza una variable auxiliar llamada `aux` para determinar qué jugador está enviando información y cuál debe recibirla. Si `aux` es par, se asume que el jugador actual es el "jugador 1", y si es impar, se considera al jugador actual como el "jugador 2". Esto permite que los mensajes se procesen de manera adecuada para mantener sincronizados a los jugadores.
+>La función utiliza una variable auxiliar llamada aux para determinar qué jugador está enviando información y cuál debe recibirla. Si aux es par, se asume que el jugador actual es el "jugador 1", y si es impar, se considera al jugador actual como el "jugador 2". Esto permite que los mensajes se procesen de manera adecuada para mantener sincronizados a los jugadores.
 ````python
 data.startswith("BOLA ") and  int(aux) %  2  !=  0:
 ````
@@ -110,7 +121,7 @@ pygame.init()
  
     
 #### Inicio del Hilo de Recepción:
->Crea un hilo separado (`receive_thread`) que se encarga de recibir mensajes del servidor de forma continua mientras el juego está en ejecución.
+>Crea un hilo separado (receive_thread) que se encarga de recibir mensajes del servidor de forma continua mientras el juego está en ejecución.
  ````python
 receive_thread  =  threading.Thread(target=receive_messages, args=(client_socket,))
 
@@ -119,8 +130,13 @@ receive_thread.start()
     
 #### Espera a que Ambos Jugadores se Unan:
 
->Espera a que el servidor indique que ambos jugadores están listos para comenzar el juego antes de avanzar parararararar
->
+>Espera a que el servidor indique que ambos jugadores están listos para comenzar el juego antes de avanzar 
+```py
+if int(aux) % 2 == 0:
+        while not game_ready:
+            print("Esperando a que el otro jugador se una...")
+            pygame.display.update()
+```
 
 
 ## Servidor pong 
