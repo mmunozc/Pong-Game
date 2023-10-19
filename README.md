@@ -7,9 +7,11 @@
 
 1. Introducción
 2. Desarrollo
-	1. Aspecto importante 
-	2. Cliente Pong
-	3. Server pong
+	1. Aspectos importante
+	2. UML Diagrama
+ 	3. Protocolo	 
+	4. Cliente Pong
+	5. Server pong
 3. Conclusiones  
 4. Referencias
 
@@ -36,6 +38,9 @@ server_socket = socket(AF_INET, SOCK_STREAM, 0);
 2. Las paletas se dibujan en el lado derecho de la pantalla para ambos jugadores, ajustando las coordenadas de movimiento para crear la ilusión de estar en el lado derecho.  
 3. La pelota se mueve reflejada, ajustando las coordenadas y velocidades para que ambos jugadores vean el movimiento correcto en sus pantallas.
 4. El servidor y el cliente se comunican constantemente para mantener a ambos jugadores sincronizados, transmitiendo información sobre paletas, pelota y puntaje.
+## UML diagrama
+
+## Protocolo
 
 ## Cliente pong
 
@@ -59,21 +64,13 @@ def receive_messages(client_socket):
 > Distingue entre mensajes que actualizan la posición de la paleta, mensajes que informan sobre la posición de la pelota y mensajes que actualizan el puntaje. Esto se hace analizando el contenido del mensaje, que generalmente comienza con palabras clave específicas (por ejemplo, "SUBIO", "BAJO", "BOLA", "PUNTAJE", "GAME_READY").
 ````python
 if  data.startswith("SUBIO ") or  data.startswith("BAJO "):
-
 try:
-
 action, value  =  data.split()
-
 if  action  ==  "SUBIO":
-
 new_paddle_b_y  =  float(value)
-
 elif  action  ==  "BAJO":
-
 new_paddle_b_y  =  float(value)
-
 except  ValueError:
-
 print("Error al analizar la posición recibida.")
 ````
 
@@ -139,8 +136,6 @@ receive_thread.start()
 #include <sys/select.h>
 #include <pthread.h>`
 ```
-
-
 1. ## handle_client()
 >La función  se ejecutará en un hilo para manejar la comunicación con un cliente específico. Esta función toma `ThreadData` que se utiliza para pasar información a los hilos que manejarán la comunicación con los clientes. Contiene un puntero a la información de los clientes, el recuento de clientes y el índice del cliente en particular que manejará el hilo.
 ```c
@@ -152,10 +147,102 @@ int  client_index  =  thread_data->client_index;
 ```
 >En sistesis generales recibe datos del cliente, verifica si el cliente está emparejado y, si es así, envía los datos al compañero emparejado para permitir la comunicación bidireccional en el juego Pong. Si el cliente se desconecta, se cierra el socket del cliente y se finaliza el hilo del cliente.
 
+1. ## main()
+
+#### Creación y configuración del servidor
+>  Se crea un socket del servidor utilizando socket() con la familia de direcciones  AF_INET y el tipo de socket SOCK_STREAM (TCP).Además se configura la dirección del servidor (server_addr) con el número de puerto definido (PORT) y la dirección IP para escuchar en todas las interfaces (INADDR_ANY).
+```c
+int  server_socket, new_socket;
+struct  sockaddr_in  server_addr, new_addr;
+socklen_t  addr_size;
+fd_set readfds;
+ClientInfo  clients[MAX_CLIENTS] = {0};
+server_socket  =  socket(AF_INET, SOCK_STREAM, 0);
+if (server_socket  <  0) {
+perror("Error al crear el socket");
+exit(1);}
+printf("Servidor creado.\n");
+server_addr.sin_family  = AF_INET;
+server_addr.sin_port  =  htons(PORT);
+server_addr.sin_addr.s_addr  = INADDR_ANY;
+```
+>también se se crea un archivo LogFile.txt que se utilizará para registrar eventos y actividades del servidor, se utiliza la función writeToLog() para escribir un mensaje que indica que el servidor ha sido creado.
+```c
+char  log_message[256];
+snprintf(log_message, sizeof(log_message), "Servidor creado.\n");
+writeToLog(log_message);
+```
+#### Vinculación del servidor a una dirección y puerto-Escucha de conexiones entrantes
+>La función bind() vincula el servidor a una dirección y puerto específicos. Si tiene éxito, devuelve 0; de lo contrario, un valor negativo. Se verifica la vinculación, y si falla, se muestra un mensaje de error y se registra en un archivo de registro, cerrando el programa.
+>La función listen() permite al servidor escuchar conexiones entrantes. Si tiene éxito, devuelve 0; de lo contrario, un valor negativo. Se verifica la configuración de escucha y, si es exitosa, se muestra un mensaje de confirmación. En caso de falla, se registra un mensaje de error, y el programa se cierra para finalizar la ejecución.
+
+
+```c
+if (bind(server_socket, (struct  sockaddr  *)&server_addr, sizeof(server_addr)) <  0) {
+perror("Error en el binding");
+///
+char  log_message[256];
+snprintf(log_message, sizeof(log_message), "Error en el binding");
+writeToLog(log_message);
+exit(1);
+}
+if (listen(server_socket, MAX_CLIENTS) ==  0) {
+printf("Escuchando...\n");
+///
+char  log_message[256];
+snprintf(log_message, sizeof(log_message), "Error en el binding");
+writeToLog(log_message);
+} else {
+printf("Error en la escucha.\n"); 
+///
+char  log_message[256];
+snprintf(log_message, sizeof(log_message), "Error en el binding");
+writeToLog(log_message);
+exit(1);
+}
+```
+#### Gestión de actividad en el servidor:**
+ >La condición if (FD_ISSET(server_socket, &readfds)) verifica si hay actividad en el socket del servidor. Si es así, significa que un cliente intenta establecer una nueva conexión.
+> Se acepta la conexión entrante utilizando accept(), lo que crea un nuevo socket llamado new_socket para comunicarse con ese cliente.
+ >La información del nuevo cliente, como su nombre, se recopila y almacena en el arreglo clients[].
+ ```c
+ if (FD_ISSET(server_socket, &readfds)) {
+new_socket  =  accept(server_socket, (struct  sockaddr  *)&new_addr, &addr_size);
+for (int  i  =  0; i  <  MAX_CLIENTS; i++) {
+if (clients[i].client_socket  ==  0) {
+char  aux[5];
+clients[i].client_socket  =  new_socket;
+ ```
+#### Emparejamiento de clientes
+>Se busca un cliente emparejable para el nuevo cliente en un bucle anidado. Los clientes se emparejan si no están emparejados previamente !clients[j].paired y si no son ellos mismos  i != j.
+Si se encuentra un cliente emparejable, se establece un par de variables que indican que los clientes están emparejados. Se envía un mensaje al primer cliente emparejado para notificarle que el juego está listo GAME_READY.
+```c
+if (clients[j].client_socket  >  0  &&  !clients[j].paired  &&  i  !=  j) {
+clients[i].paired  =  1;
+clients[j].paired  =  1;
+clients[i].partner_index  =  j;
+clients[j].partner_index  =  i;
+printf("Emparejando a %s y %s\n", clients[i].name, clients[j].name);
+///
+char  log_message[256];
+snprintf(log_message, sizeof(log_message), "Empieza el juego entre %s y %s", clients[i].name, clients[j].name);
+writeToLog(log_message);
+char  game_ready_message[]  =  "GAME_READY";
+send(clients[j].client_socket, game_ready_message, strlen(game_ready_message), 0);
+```
 # Conclusiones
 
-You can rename the current file by clicking the file name in the navigation bar or by clicking the **Rename** button in the file explorer.
+* Se logró implementar una comunicación cliente-servidor eficiente utilizando el protocolo TCP. El servidor en C y el cliente en Python pudieron intercambiar datos, lo que permitió el control en tiempo real de las paletas y la pelota entre los jugadores.
+* La modalidad espejo, donde una paleta refleja los movimientos del otro jugador, añadió un desafío al requerir sincronización precisa y comunicación efectiva entre los jugadores y el servidor.
+* Durante el proyecto, se enfrentaron desafíos técnicos, como la sincronización precisa del juego y la gestión de múltiples conexiones de red. Estos desafíos impulsaron la búsqueda de soluciones creativas y la resolución de problemas.
+* El proyecto contribuyó al desarrollo de habilidades técnicas y al enriquecimiento del conocimiento en programación de juegos y comunicación en red.
 
 # Referencias
 
-You can delete the current file by clicking the **Remove** button in the file explorer. The file will be moved into the **Trash** folder and automatically deleted after 7 days of inactivity.
+
+* https://csperkins.org/teaching/2007-2008/networked-systems/lecture04.pdf
+* https://gamefaqs.gamespot.com/boards/916373-pc/67425559
+* https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/
+* https://beej.us/guide/bgnet/
+* https://beej.us/guide/bgc/
+    
