@@ -1,17 +1,14 @@
+from time import sleep
 import pygame
 import random
 import socket
 import threading
-import time
+import sys
 
-
-
-WIDTH, HEIGHT = 1200, 600
-ballVel = 0.1
+WIDTH, HEIGHT = 1000, 600
+ballVel = 0.5
 new_paddle_b_y = HEIGHT // 2 - 40
 game_ready = False
-
-
 
 def receive_messages(client_socket):
     global new_paddle_b_y
@@ -193,7 +190,7 @@ def main():
             client_socket.send(posBall.encode())
         else:
             ball_x = bola_x
-            ball_y = bola_x
+            ball_y = bola_y
 
         # Colisiones de la pelota con las paredes
         if ball_y <= 0 or ball_y >= HEIGHT - 20:
@@ -227,9 +224,46 @@ def main():
             ball_speed_x = ballVel * random.choice((1, -1))
             ball_speed_y = ballVel * random.choice((1, -1))
 
+        if int(aux) % 2 == 0:
+            score_display = font.render(f"{score_a}  {score_b}", True, WHITE)
+            screen.blit(score_display, (WIDTH // 2 - 19, 10))
+        else:
+            score_display = font.render(f"{score_b}  {score_a}", True, WHITE)
+            screen.blit(score_display, (WIDTH // 2 - 19, 10))
+
         # Verificar si uno de los jugadores llegó a 7 puntos para terminar el juego
-        if score_a == 100 or score_b == 100:
-            running = False
+        if score_a == 4 or score_b == 4:
+            screen.fill((0, 0, 0))
+
+        
+            if int(aux) % 2 == 0:
+                if score_a == 4:
+                    finalMessage = font.render("GANASTE", True, (255, 255, 255))
+                    screen.blit(finalMessage, (450, 300))
+                    pygame.display.update()
+                    sleep(10)
+                    running = False
+                else:
+                    finalMessage = font.render("PERDISTE", True, (255, 255, 255))
+                    screen.blit(finalMessage, (450, 300))
+                    pygame.display.update()
+                    sleep(10)
+                    running = False
+
+            if int(aux) % 2 != 0:
+                if score_a == 4:
+                    finalMessage = font.render("GANASTE", True, (255, 255, 255))
+                    screen.blit(finalMessage, (450, 300))
+                    pygame.display.update()
+                    sleep(10)
+                    running = False
+
+                else: 
+                    finalMessage = font.render("PERDISTE", True, (255, 255, 255))
+                    screen.blit(finalMessage, (450, 300))
+                    pygame.display.update()
+                    sleep(10)
+                    running = False
 
         # Limpiar la pantalla
         screen.fill((0, 0, 0))
@@ -240,8 +274,12 @@ def main():
         pygame.draw.ellipse(screen, WHITE, (ball_x, ball_y, 20, 20))
 
         # Mostrar la puntuación en la pantalla
-        score_display = font.render(f"{score_a}  {score_b}", True, WHITE)
-        screen.blit(score_display, (WIDTH // 2 - 19, 10))
+        if int(aux) % 2 == 0:
+            score_display = font.render(f"{score_a}  {score_b}", True, WHITE)
+            screen.blit(score_display, (WIDTH // 2 - 19, 10))
+        else:
+            score_display = font.render(f"{score_b}  {score_a}", True, WHITE)
+            screen.blit(score_display, (WIDTH // 2 - 19, 10))
 
         # Linea del centro
         pygame.draw.line(screen, WHITE, (WIDTH // 2, 0), (WIDTH // 2, HEIGHT), 5)

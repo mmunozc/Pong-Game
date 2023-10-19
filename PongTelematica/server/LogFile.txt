@@ -1,0 +1,30 @@
+[Wed Oct 18 22:02:25 2023
+] Servidor creado.
+
+[Wed Oct 18 22:02:25 2023
+] Error en el binding
+[Wed Oct 18 22:03:21 2023
+] Empieza el juego entre Jugador 2 y Jugador 1
+[Wed Oct 18 22:03:21 2023
+] Jugador 1 Jugador 2 se conectó
+[Wed Oct 18 22:03:21 2023
+] Jugador 2 Jugador 1 se conectó
+[Wed Oct 18 22:04:24 2023
+] Cliente Jugador 2 se desconectó.
+[Wed Oct 18 22:04:25 2023
+] Cliente Jugador 1 se desconectó.
+[Wed Oct 18 22:05:46 2023
+] Servidor creado.
+
+[Wed Oct 18 22:05:46 2023
+] Error en el binding
+[Wed Oct 18 22:06:12 2023
+] Empieza el juego entre Jugador 2 y Jugador 1
+[Wed Oct 18 22:06:12 2023
+] Jugador 1 Jugador 2 se conectó
+[Wed Oct 18 22:06:12 2023
+] Jugador 2 Jugador 1 se conectó
+[Wed Oct 18 22:07:31 2023
+] Cliente Jugador 2 se desconectó.
+[Wed Oct 18 22:07:32 2023
+] Cliente Jugador 1 se desconectó.
